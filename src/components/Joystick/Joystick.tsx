@@ -1,11 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
-// import { Topic } from 'roslib';
 import * as ROSLIB from "roslib";
 
 
-
-
-type JoystickProps = {
+interface JoystickProps {
   size?: number;           // 大きな円の直径(px)
   handleSize?: number;       // 小さな円（ノブ）の直径(px)
   deadzone?: number;       // 中央のデッドゾーン（0〜1）
@@ -14,36 +11,49 @@ type JoystickProps = {
   ros: any;
 };
 
-const Joystick: React.FC<JoystickProps> = ({
+export const Joystick = ({ 
   size = 200,
   handleSize = 60,
   deadzone = 0.05,
-  // onChange = () => {},
   onRelease = () => {},
   ros
-}) => {
+}: JoystickProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [handlePos, setHandlePos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
 
+  const prevPubX = useRef(0);
+  const prevPubY = useRef(0);
+
   const radius = size / 2;
   const handleRadius = handleSize / 2;
+
+  const roundTo = function(num: number, places: number) {
+    const factor = 10 ** places;
+    return Math.round(num * factor) / factor;
+  };
 
   const sendDataToRos = (x: number, y: number) => {
     if (!ros) {
       return;
     }
-    console.log('sendDataToRos is called');
+  
+    const pubX = roundTo(Number(x), 1);
+    const pubY = roundTo(Number(y), 1);
+
+    if ((prevPubX.current === pubX) && (prevPubY.current === pubY)) {
+      return;
+    }
 
     var image = new ROSLIB.Topic({
       ros : ros,
       name : '/motor_data',
       messageType : 'motor_control/msg/Joystick'
     });
-  
-    let twist = ({
-      x: Number(x),
-      y: Number(y)
+
+    const twist = ({
+      x: pubX,
+      y: pubY
     });
 
     console.log("twist = ", twist);
@@ -51,12 +61,15 @@ const Joystick: React.FC<JoystickProps> = ({
     //   console.log('Send motor data');
     // });
     image.publish(twist);
+
+    prevPubX.current = pubX;
+    prevPubY.current = pubY;
   };
 
   const emitChange = (handle_x: number, handle_y: number) => {
-    // console.log("dx = ", dx, ", dy = ", dy);
-    let x = handle_x / radius; // 正規化された、Joystic中心を原点としたJoysticのハンドルのx座標
-    let y = -1 * handle_y / radius; // 正規化された、Joystic中心を原点としたJoysticのハンドルのy座標(上向きが正)
+    const range = radius - handleRadius;
+    let x = handle_x / range; // 正規化された、Joystic中心を原点としたJoysticのハンドルのx座標
+    let y = -1 * handle_y / range; // 正規化された、Joystic中心を原点としたJoysticのハンドルのy座標(上向きが正)
 
     x = Math.max(-1, Math.min(1, x));
     y = Math.max(-1, Math.min(1, y));
@@ -117,7 +130,7 @@ const Joystick: React.FC<JoystickProps> = ({
     e.preventDefault();
     setDragging(false);
     setHandlePos({ x: 0, y: 0 });
-    sendDataToRos({ x: 0, y: 0 });
+    sendDataToRos(0, 0);
     onRelease();
   };
 
@@ -170,5 +183,3 @@ const Joystick: React.FC<JoystickProps> = ({
     </div>
   );
 };
-
-export default Joystick;
