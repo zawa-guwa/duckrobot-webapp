@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import Joystick from './components/Joystick/Joystick'
+import { Joystick } from './components/Joystick/Joystick'
 import CameraView from './components/CameraView/CameraView'
 import RosConnection from './components/RosConnection'
 import './App.css'
 
 function App() {
   const [ros, setRos] = useState(null);
-  const [vec, setVec] = useState({ x: 0, y: 0 });
 
   return (
     <>
@@ -19,12 +18,7 @@ function App() {
           <CameraView ros={ros}  />
          <div className="control-area">   
           <div className='joystick'>
-            <Joystick 
-              // onChange={(v) => {
-              //   setVec(v);
-              //   // 例：API送信やWebSocketでモータへ指令
-              //   // ws.send(JSON.stringify({ throttle: v.y, steer: v.x }));
-              // }}
+            <Joystick
               ros={ros}
             />
           </div>
