@@ -1,15 +1,15 @@
-import { useState } from 'react'
-import { Joystick } from './components/Joystick/Joystick'
-import CameraView from './components/CameraView/CameraView'
-import RosConnection from './components/RosConnection'
-import './App.css'
+import { useState } from 'react';
+import { Joystick } from './components/Joystick/Joystick';
+import { CameraView } from './components/CameraView/CameraView';
+import { RosConnection } from './components/RosConnection';
+import './App.css';
 
 function App() {
   const [ros, setRos] = useState(null);
 
   return (
     <>
-      <RosConnection rosUrl="ws://192.168.3.43:9090" rosDomainId="89" setRos={setRos} />
+      <RosConnection rosUrl="ws://192.168.3.43:9090" setRos={setRos} />
       <div className="app">
         <div className="header">
          <a>Duck Robot</a>

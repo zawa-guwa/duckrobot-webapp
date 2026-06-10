@@ -1,10 +1,13 @@
-import React, { useEffect, useState } from 'react';
-// import { Topic } from 'roslib';
+import { useEffect, useState } from 'react';
 import * as ROSLIB from "roslib";
 
+interface CameraViewProps {
+  ros: ROSLIB.Ros | null;
+};
 
-
-const CameraView = ({ros}) => {
+export const CameraView = ({
+  ros
+}: CameraViewProps) => {
   const [imgData, setImgData] = useState('');
 
   useEffect(() => {
@@ -12,7 +15,7 @@ const CameraView = ({ros}) => {
         return;
       }
 
-    var image = new ROSLIB.Topic({
+    const image = new ROSLIB.Topic({
       ros : ros,
       name : '/image_base64',
       messageType : 'std_msgs/msg/String'
@@ -20,7 +23,6 @@ const CameraView = ({ros}) => {
   
     image.subscribe(function(message) {
       const data = "data:image/png;base64," + message.data;
-    //   const imgData = setAttribute('src', data);
       setImgData(data);
     });
   
@@ -28,9 +30,9 @@ const CameraView = ({ros}) => {
   
   return (
     <>
+    {imgData && (
       <img src={imgData} alt="Camera Data" />
+    )}
     </>
   );
 }
-
-export default CameraView
